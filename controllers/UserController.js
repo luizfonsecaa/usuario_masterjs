@@ -11,13 +11,19 @@ class UserController{
         this.formEl.addEventListener("submit", event => {
             event.preventDefault();
             let values = this.getValue();
-            values.photo = "";
-            //pega os valores do formulario e passa para o metodo de adicionar linha
-            this.getPhoto();
-            this.addLine(values);
+
+            this.getPhoto().then(
+                (content) => { 
+                    values.photo = content;
+                    this.addLine(values);
+                }, 
+                (e) => {
+                    console.error(e);
+                }
+            );
         });
     }
-
+  
     // percorrendo todos os elementos de user 
     getValue(){
         let user = {};
@@ -34,23 +40,33 @@ class UserController{
 
     //api de foto
     getPhoto(){
-        let fileReader = new FileReader();
-        let elements = [...this.formEl.elements].filter(item =>{
-            if(item.name === "photo"){
-                return item;
+        return  new Promise((resolve, reject) => {
+            let fileReader = new FileReader();
+            let elements = [...this.formEl.elements].filter(item => {
+                if(item.name === "photo"){
+                    return item;
+                }
+            });
+            let file = elements[0].files[0];
+            fileReader.onload = () => {
+                resolve(fileReader.result);
+            };
+            fileReader.onerror = (e) => {
+                reject(e);
+            };
+            if(file){
+                fileReader.readAsDataURL(file);    
+            } else{
+                resolve('dist/img/boxed-bg.jpg');
             }
-            return
         });
-        let file = elements[0].files[0];
-        fileReader.onload = () =>{};
-        fileReader.readAsDataURL(file);
     }
 
     //adiciona uma linha na tabela
     addLine(dataUser){
         this.tableEl.innerHTML = `
             <tr>
-                <td><img src="${dataUser.foto}" alt="User Image" class="img-circle img-sm"></td>
+                <td><img src="${dataUser.photo}" alt="User Image" class="img-circle img-sm"></td>
                 <td>${dataUser.name}</td>
                 <td>${dataUser.email}</td>
                 <td>${dataUser.admin}</td>
@@ -61,6 +77,5 @@ class UserController{
                 </td>
             </tr>
         `;
-    }
-    
+    } 
 }
