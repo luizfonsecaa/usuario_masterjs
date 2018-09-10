@@ -11,6 +11,7 @@ class UserController{
         document.querySelector("#box-id-user-update .btn-cancel").addEventListener('click', e=>{
             this.showPanelCreate();
         });
+        
     }
 
     //metodo disparado quando o botao for clicado
@@ -108,34 +109,26 @@ class UserController{
             let json = JSON.parse(tr.dataset.user);
             let form = document.querySelector("#form-user-update");
             for(let name in json){
-                
-
                 let field = form.querySelector("[name=" + name.replace("_","") + "]");
-                
                 if(field){
                     console.log(field.type);
                     switch (field.type){
                         case 'file':
                             continue;
                         break;
-
                         case 'radio':
                             field = form.querySelector("[name=" + name.replace("_","") + "][value=" + json[name] + "]");
                             field.checked = true;
                         break;
-                        
                         case'checkbox':
-                             field.checked =  json[name];
+                            field.checked =  json[name];
                         break;
-
                         default:
                             field.value = json[name];
                     }
                 }
             }
-
             this.showPanelUpdate();
-            
         });
         this.tableEl.appendChild(tr);
         this.updateCount();
