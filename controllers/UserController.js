@@ -18,7 +18,23 @@ class UserController{
             let btn = this.formUpdateEl.querySelector("[type=submit]");
             btn.disabled = true;
             let values = this.getValue(this.formUpdateEl);
-
+            let index = this.formUpdateEl.dataset.trIndex;
+            let tr = this.tableEl.rows[index];
+            tr.dataset.user = JSON.stringify(values);
+            tr.innerHTML = `
+                <td><img src="${values.photo}" alt="User Image" class="img-circle img-sm"></td>
+                <td>${values.name}</td>
+                <td>${values.email}</td>
+                <td>${(values.admin) ? 'Sim' : 'nao'}</td>
+                <td>${Util.dateFormat(values.register)}</td>
+                <td>
+                    <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
+                    <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
+                </td>
+            `;
+            this.addEventsTr(tr);
+            this.updateCount();
+            this.showPanelCreate();
         });
 
     }
@@ -53,12 +69,10 @@ class UserController{
     getValue(formEl){
         let user = {};
         let isValid = true;
-        console.dir(formEl);
-        console.log([...formEl.elements]);
-        return;
         [...formEl.elements].forEach( field => {
             //verifico se existe e se nao esta vazio
             if(['name', 'email', 'password'].indexOf(field.name) > -1 && !field.value){
+                console.log('entrei');
                 field.parentElement.classList.add('has-error');
                 isValid = false;
             }
@@ -98,6 +112,7 @@ class UserController{
             if(file){
                 fileReader.readAsDataURL(file);
             } else{
+                console.log('passando')
                 resolve('dist/img/boxed-bg.jpg');
             }
         });
@@ -105,8 +120,7 @@ class UserController{
 
     //adiciona uma linha na tabela
     addLine(dataUser){
-        console.log(typeof(dataUser));
-        console.log(...dataUser);
+
         let tr = document.createElement('tr');
         tr.dataset.user = JSON.stringify(dataUser);
         tr.innerHTML = `
@@ -120,9 +134,19 @@ class UserController{
                     <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
                 </td>
         `;
+       
+        this.addEventsTr(tr);
+        this.tableEl.appendChild(tr);
+        this.updateCount();
+    }
+
+    //metodo que adiciona o evento no botao da tr (editar)
+    addEventsTr(tr){
         tr.querySelector(".btn-edit").addEventListener("click", e=>{
             let json = JSON.parse(tr.dataset.user);
             let form = document.querySelector("#form-user-update");
+            // index da linha
+            form.dataset.trIndex = tr.sectionRowIndex;
             for(let name in json){
                 let field = form.querySelector("[name=" + name.replace("_","") + "]");
                 if(field){
@@ -145,8 +169,6 @@ class UserController{
             }
             this.showPanelUpdate();
         });
-        this.tableEl.appendChild(tr);
-        this.updateCount();
     }
 
     //Apresenta o formulario de criação
@@ -154,7 +176,7 @@ class UserController{
         document.querySelector('#box-id-user-create').style.display = "block";
         document.querySelector('#box-id-user-update').style.display = "none";
     }
-
+  
     //apresenta o formulario de edição
     showPanelUpdate(){
 
